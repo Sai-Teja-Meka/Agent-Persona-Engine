@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # The Graph Brain (Neo4j)
+  neo4j:
+    image: neo4j:5.15.0-community
+    container_name: infinite_graph
+    ports:
+      - "7474:7474" # HTTP Console
+      - "7687:7687" # Bolt Protocol
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4jneo4jneo4j}
+      # Critical: Enable APOC for advanced graph algorithms
+      - NEO4J_PLUGINS=["apoc"] 
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - ./docker/neo4j/data:/data
+      - ./docker/neo4j/logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # The Semantic Memory (ChromaDB)
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: infinite_vectors
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./docker/chroma:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE

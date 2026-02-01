@@ -1,0 +1,9 @@
+tenacity
+langchain-google-genai
+langchain-core
+neo4j
+pydantic
+pydantic-settings
+python-dotenv
+chromadb
+sentence-transformers
