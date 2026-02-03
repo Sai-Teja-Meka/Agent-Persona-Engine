@@ -3,10 +3,10 @@ pydantic==2.6.0
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
 tenacity==8.2.3
-langchain-google-genai==1.0.0
-langchain-groq==0.1.0
-langchain-openai==0.1.0
-langchain-core==0.1.23
+langchain-google-genai==2.1.12
+langchain-groq==0.2.1
+langchain-openai==0.2.11
+langchain-core==0.3.28
 neo4j==5.15.0
 chromadb==0.4.22
 sentence-transformers==2.3.1
