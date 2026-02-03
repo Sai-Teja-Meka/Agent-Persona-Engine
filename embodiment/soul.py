@@ -82,9 +82,17 @@ class CharacterSoul:
     def deep_recall(
         self, user_input: str
     ) -> Tuple[List[str], List[str], List[dict], List[dict]]:
-        # 1. Vector (Sensory)
-        vector_results = self.vault.search(f"{self.name} {user_input}", n_results=3)
-        memories = vector_results.get("scenes", [])
+    # 1. Vector (Sensory) - with fallback
+        try:
+            vector_results = self.vault.search_scenes(
+                query=f"{self.name} {user_input}",
+                top_k=5
+        )
+            memories = vector_results if vector_results else []
+        except Exception as e:
+            logger.warning(f"⚠️ Vector search failed: {e}")
+            memories = []
+
 
         # 2. Graph (Logic / Relationships)
         graph_query = """

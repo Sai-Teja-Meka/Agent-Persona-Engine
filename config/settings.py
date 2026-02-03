@@ -33,10 +33,23 @@ class Settings(BaseSettings):
     # --- Cognition: LLM (Groq) ---
     GROQ_API_KEY: str | None = None
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
-
-    # --- Pipeline Settings ---
+    
+        # --- Pipeline Settings ---
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
+    
+    @property
+    def chroma_enabled(self) -> bool:
+        """Check if ChromaDB is configured and reachable"""
+        try:
+            import requests
+            response = requests.get(
+                f"http://{self.CHROMA_HOST}:{self.CHROMA_PORT}/api/v1/heartbeat", 
+                timeout=2
+            )
+            return response.status_code == 200
+        except:
+            return False
     
     # Load from .env file automatically
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
