@@ -1,5 +1,5 @@
 streamlit==1.31.0
-pydantic==2.6.0
+pydantic==2.7.4
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
 tenacity==8.2.3
