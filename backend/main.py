@@ -18,8 +18,8 @@ from embodiment.dashboard_utils import SystemMonitor
 # Global State (created at import time)
 # ============================================================
 
-kg = KnowledgeGraph()
-vault = VectorVault()
+kg = None
+vault = None
 active_personas = {}  # persona_id -> CharacterSoul instance
 
 # ============================================================
@@ -29,8 +29,11 @@ active_personas = {}  # persona_id -> CharacterSoul instance
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    global kg, vault
     print("🚀 Persona Engine API starting...")
     print("📊 Verifying database connections...")
+    kg = KnowledgeGraph()
+    vault = VectorVault()  
     try:
         kg.verify_connection()
         print("✅ Neo4j connected")
@@ -41,6 +44,9 @@ async def lifespan(app: FastAPI):
         print(f"❌ Startup error: {e}")
 
     yield
+    
+    if kg:
+        kg.close()
 
     # Shutdown (optional)
     print("👋 Shutting down...")
