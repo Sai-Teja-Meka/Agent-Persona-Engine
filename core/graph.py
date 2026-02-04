@@ -9,10 +9,16 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeGraph:
     def __init__(self):
+        # Support both bolt:// (local) and neo4j+s:// (Aura)
+        uri = settings.NEO4J_URI
+        
         self.driver = GraphDatabase.driver(
-            settings.NEO4J_URI,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD)
+            uri,
+            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+            max_connection_lifetime=3600,
+            encrypted=uri.startswith('neo4j+s://'),  # Auto-detect encryption
         )
+        
         self.verify_connection()
         self.create_schema()
 
