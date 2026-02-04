@@ -28,12 +28,22 @@ st.markdown("""
 # ======================================================
 # Helpers
 # ======================================================
+@st.cache_resource
+def get_knowledge_graph():
+    """Cached Neo4j connection"""
+    return KnowledgeGraph()
+
 def get_available_characters():
-    kg = KnowledgeGraph()
-    query = "MATCH (c:Character) RETURN c.name AS name ORDER BY c.name"
-    with kg.driver.session() as session:
-        result = session.run(query)
-        return [record["name"] for record in result]
+    try:
+        kg = get_knowledge_graph()  # ← Use cached version
+        query = "MATCH (c:Character) RETURN c.name AS name ORDER BY c.name"
+        with kg.driver.session() as session:
+            result = session.run(query)
+            return [record["name"] for record in result]
+    except Exception as e:
+        st.error(f"Database connection failed: {e}")
+        return []
+
 
 # ======================================================
 # Sidebar

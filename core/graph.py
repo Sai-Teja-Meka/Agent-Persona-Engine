@@ -11,7 +11,9 @@ class KnowledgeGraph:
     def __init__(self):
         self.driver = GraphDatabase.driver(
             settings.NEO4J_URI,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD)
+            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+            connection_timeout=10,  # ← ADD THIS
+            max_connection_lifetime=300  # ← AND THIS
         )
         self.verify_connection()
         self.create_schema()
