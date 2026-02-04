@@ -6,7 +6,7 @@ tenacity==8.2.3
 langchain-google-genai==2.1.12
 langchain-groq==0.2.1
 langchain-openai==0.2.11
-langchain-core==0.3.28
+langchain-core==0.3.75
 neo4j==5.15.0
 chromadb==0.4.22
 sentence-transformers==2.3.1
