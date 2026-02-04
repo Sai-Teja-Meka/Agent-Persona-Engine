@@ -23,7 +23,7 @@ vault = None
 active_personas = {}  # persona_id -> CharacterSoul instance
 
 # ============================================================
-# Startup / Shutdown (lifespan)
+# Startup / Shutdown (lifespan).
 # ============================================================
 
 @asynccontextmanager
