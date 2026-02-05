@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import ReactFlow, {
     Controls,
     Background,
@@ -7,6 +7,7 @@ import ReactFlow, {
     MarkerType,
     ConnectionMode,
 } from 'reactflow';
+import type { NodeMouseHandler } from 'reactflow';
 import type{
     Node,
     Edge,
@@ -99,7 +100,7 @@ export function KnowledgeGraph() {
         setEdges(flowEdges);
     }, [graphData, setNodes, setEdges]);
 
-    const onNodeClick = useCallback((node: Node) => {
+    const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
         setSelectedNode(node.data);
     }, []);
 
@@ -285,7 +286,7 @@ export function KnowledgeGraph() {
 }
 
 // Simple auto-layout algorithm
-function autoLayout(nodes: Node[]): Node[] {
+function autoLayout(nodes: Node[], _edges: Edge[]): Node[] {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
     const radius = 300;
