@@ -5,6 +5,8 @@ from typing import List, Dict
 import sys
 import os
 from contextlib import asynccontextmanager
+from config.settings import settings
+
 
 # Add parent directory to path to import from embodiment/core
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
