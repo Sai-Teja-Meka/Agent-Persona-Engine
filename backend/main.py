@@ -30,6 +30,8 @@ active_personas = {}  # persona_id -> CharacterSoul instance
 async def lifespan(app: FastAPI):
     # Startup
     global kg, vault
+    print("CHROMA_HOST", settings.CHROMA_HOST)
+    print("CHROMA_PORT", settings.CHROMA_PORT)
     print("🚀 Persona Engine API starting...")
     print("📊 Verifying database connections...")
     kg = KnowledgeGraph()
