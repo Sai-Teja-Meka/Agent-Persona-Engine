@@ -13,7 +13,7 @@ import type{
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
-import { Brain, Network, Loader2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { Network, Loader2,} from 'lucide-react';
 import { api } from '../../services/api';
 import { usePersonaStore } from '../../stores/usePersonaStore';
 import { Card } from '../ui/Card';

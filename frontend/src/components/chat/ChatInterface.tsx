@@ -4,7 +4,6 @@ import { Send, Loader2, Brain, ChevronDown, Info } from 'lucide-react';
 import { usePersonaStore } from '../../stores/usePersonaStore';
 import { useChatStore } from '../../stores/useChatStore';
 import { PersonaWebSocket } from '../../services/websocket';
-import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
