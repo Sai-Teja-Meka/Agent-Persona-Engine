@@ -99,7 +99,7 @@ export function KnowledgeGraph() {
         setEdges(flowEdges);
     }, [graphData, setNodes, setEdges]);
 
-    const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    const onNodeClick = useCallback((node: Node) => {
         setSelectedNode(node.data);
     }, []);
 
@@ -285,7 +285,7 @@ export function KnowledgeGraph() {
 }
 
 // Simple auto-layout algorithm
-function autoLayout(nodes: Node[], edges: Edge[]): Node[] {
+function autoLayout(nodes: Node[]): Node[] {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
     const radius = 300;

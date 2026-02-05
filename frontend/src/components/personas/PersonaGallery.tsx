@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Brain, Star, TrendingUp, Sparkles } from 'lucide-react';
