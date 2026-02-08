@@ -1,24 +1,47 @@
-from neo4j import GraphDatabase
+import time
 import logging
-from config.settings import settings
-from core.models import Chapter, CharacterState
+from neo4j import GraphDatabase
+from neo4j.exceptions import ServiceUnavailable, Neo4jError
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class KnowledgeGraph:
     def __init__(self):
-        uri = settings.NEO4J_URI
-
         self.driver = GraphDatabase.driver(
-            uri,
+            settings.NEO4J_URI,
             auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
             max_connection_lifetime=3600,
+            connection_timeout=10,              # fail faster on bad network
+            max_transaction_retry_time=15,      # neo4j driver retry window
         )
+        self._ready = False
+        self._last_error = None
 
-        self.verify_connection()
-        self.create_schema()
+        # Try to init, but do NOT kill the app if it fails.
+        self._init_with_retry()
+
+    def _init_with_retry(self, attempts: int = 6):
+        for i in range(1, attempts + 1):
+            try:
+                self.driver.verify_connectivity()
+                self.create_schema()
+                self._ready = True
+                self._last_error = None
+                logger.info("✅ Neo4j ready")
+                return
+            except Exception as e:
+                self._ready = False
+                self._last_error = e
+                wait = min(2 ** i, 30)
+                logger.warning(f"Neo4j not ready (attempt {i}/{attempts}): {e}; retrying in {wait}s")
+                time.sleep(wait)
+
+        logger.error(f"Neo4j still unavailable after {attempts} attempts; continuing in degraded mode: {self._last_error}")
+
+    def ensure_ready(self):
+        if not self._ready:
+            # your API layer should catch this and return HTTP 503
+            raise RuntimeError(f"Neo4j unavailable: {self._last_error}")
 
     def close(self):
         self.driver.close()
