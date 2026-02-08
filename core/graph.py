@@ -10,12 +10,24 @@ logger = logging.getLogger(__name__)
 class KnowledgeGraph:
     def __init__(self):
         uri = settings.NEO4J_URI
-
-        self.driver = GraphDatabase.driver(
-            uri,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
-            max_connection_lifetime=3600,
-        )
+        
+        # Detect if using Neo4j Aura (cloud)
+        if uri.startswith('neo4j+s://') or uri.startswith('neo4j+ssc://'):
+            # Neo4j Aura requires SSL configuration
+            self.driver = GraphDatabase.driver(
+                uri,
+                auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+                max_connection_lifetime=3600,
+                encrypted=True,
+                trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES'
+            )
+        else:
+            # Local/Railway Neo4j (bolt://)
+            self.driver = GraphDatabase.driver(
+                uri,
+                auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+                max_connection_lifetime=3600,
+            )
 
         self.verify_connection()
         self.create_schema()
