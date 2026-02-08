@@ -11,21 +11,11 @@ class KnowledgeGraph:
     def __init__(self):
         uri = settings.NEO4J_URI
 
-        # If URI already specifies TLS via +s/+ssc, do NOT set encrypted/trust
-        if uri.startswith("neo4j+s://") or uri.startswith("neo4j+ssc://") or \
-           uri.startswith("bolt+s://") or uri.startswith("bolt+ssc://"):
-            self.driver = GraphDatabase.driver(
-                uri,
-                auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
-                max_connection_lifetime=3600,
-            )
-        else:
-            # Plain bolt:// or neo4j:// (optionally add encrypted/trust here if YOU want)
-            self.driver = GraphDatabase.driver(
-                uri,
-                auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
-                max_connection_lifetime=3600,
-            )
+        self.driver = GraphDatabase.driver(
+            uri,
+            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+            max_connection_lifetime=3600,
+        )
 
         self.verify_connection()
         self.create_schema()
