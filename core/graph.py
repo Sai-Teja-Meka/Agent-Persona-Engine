@@ -1,12 +1,14 @@
+# core/graph.py
+
 from __future__ import annotations
 
 import logging
 import random
 import time
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from neo4j import GraphDatabase
-from neo4j._sync.driver import Driver  # type: ignore
 from neo4j.exceptions import (
     AuthError,
     ConfigurationError,
@@ -24,48 +26,58 @@ class Neo4jNotReadyError(RuntimeError):
     """Raised when Neo4j is not reachable/ready at the moment."""
 
 
+@dataclass(frozen=True)
+class Neo4jConfig:
+    uri: str
+    user: str
+    password: str
+    database: Optional[str] = None
+
+    # If True, KnowledgeGraph() raises on bootstrap failure.
+    # If False, it starts in "degraded mode" and becomes ready when Neo4j returns.
+    strict: bool = False
+
+    # Driver config
+    max_connection_lifetime_s: int = 3600
+    connection_timeout_s: float = 10.0
+    max_transaction_retry_time_s: float = 15.0
+
+    # Bootstrap retry/backoff
+    bootstrap_attempts: int = 6
+    bootstrap_initial_delay_s: float = 0.5
+    bootstrap_max_delay_s: float = 15.0
+
+
 class KnowledgeGraph:
     """
     Neo4j access layer that is resilient to transient network/DNS failures.
 
-    Key behavior changes vs your original version:
-    - Does NOT crash the whole app on startup if Neo4j DNS/network blips.
-    - Maintains an internal readiness flag and last_error.
-    - Auto-retries bootstrap (verify + schema) with backoff.
-    - Any DB method calls ensure Neo4j readiness (and can attempt a quick reconnect).
+    - Does NOT have to crash the whole app on startup if Neo4j blips (unless strict=True).
+    - Maintains readiness + last_error.
+    - Bootstraps (verify + schema) with backoff.
+    - All DB methods ensure Neo4j readiness first.
     """
 
-    def __init__(
-        self,
-        *,
-        bootstrap_attempts: int = 6,
-        bootstrap_initial_delay_s: float = 0.5,
-        bootstrap_max_delay_s: float = 15.0,
-        connection_timeout_s: float = 10.0,
-        max_tx_retry_time_s: float = 15.0,
-    ) -> None:
-        uri: str = settings.NEO4J_URI
+    def __init__(self, cfg: Optional[Neo4jConfig] = None) -> None:
+        self.cfg = cfg or Neo4jConfig(
+            uri=settings.NEO4J_URI,
+            user=settings.NEO4J_USER,
+            password=settings.NEO4J_PASSWORD,
+            database=getattr(settings, "NEO4J_DATABASE", None) or None,
+            strict=False,
+        )
 
         self._ready: bool = False
         self._last_error: Optional[BaseException] = None
 
-        # Optional: if you have NEO4J_DATABASE in settings, it will be used.
-        self._database: Optional[str] = getattr(settings, "NEO4J_DATABASE", None) or None
+        self.driver = self._new_driver()
 
-        self.driver: Driver = GraphDatabase.driver(
-            uri,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
-            max_connection_lifetime=3600,
-            connection_timeout=connection_timeout_s,
-            max_transaction_retry_time=max_tx_retry_time_s,
-        )
-
-        # Try to bootstrap now, but do NOT hard-fail the process on transient errors.
+        # Bootstrap now, but only fail the process if strict=True.
         self._bootstrap(
-            attempts=bootstrap_attempts,
-            initial_delay_s=bootstrap_initial_delay_s,
-            max_delay_s=bootstrap_max_delay_s,
-            fatal=False,
+            attempts=self.cfg.bootstrap_attempts,
+            initial_delay_s=self.cfg.bootstrap_initial_delay_s,
+            max_delay_s=self.cfg.bootstrap_max_delay_s,
+            fatal=self.cfg.strict,
         )
 
     # -----------------------------
@@ -85,13 +97,33 @@ class KnowledgeGraph:
     def health(self) -> Dict[str, Any]:
         return {"neo4j_ready": self._ready, "neo4j_last_error": self.last_error}
 
+    def ping(self) -> None:
+        """
+        Hard check: forces a connection attempt and raises on failure.
+        """
+        self.driver.verify_connectivity()
+
+    def verify_connection(self, *, strict: Optional[bool] = None) -> bool:
+        """
+        Backwards-compatible startup hook: returns readiness.
+        If strict=True, raises if Neo4j isn't reachable.
+        """
+        want_strict = self.cfg.strict if strict is None else strict
+        try:
+            self.ensure_ready(quick_reconnect=True)
+            return True
+        except Neo4jNotReadyError:
+            if want_strict:
+                raise
+            return False
+
     # -----------------------------
-    # Bootstrap / readiness
+    # Readiness / bootstrap
     # -----------------------------
     def ensure_ready(self, *, quick_reconnect: bool = True) -> None:
         """
         Ensures Neo4j is ready. If not ready, optionally tries a short reconnect.
-        Raise Neo4jNotReadyError if still unavailable.
+        Raises Neo4jNotReadyError if still unavailable.
         """
         if self._ready:
             return
@@ -102,6 +134,19 @@ class KnowledgeGraph:
         if not self._ready:
             raise Neo4jNotReadyError(f"Neo4j unavailable: {self._last_error}")
 
+    def _new_driver(self):
+        return GraphDatabase.driver(
+            self.cfg.uri,
+            auth=(self.cfg.user, self.cfg.password),
+            max_connection_lifetime=self.cfg.max_connection_lifetime_s,
+            connection_timeout=self.cfg.connection_timeout_s,
+            max_transaction_retry_time=self.cfg.max_transaction_retry_time_s,
+        )
+
+    def _session_kwargs(self) -> Dict[str, Any]:
+        # Neo4j Python driver accepts database kwarg in v4+.
+        return {"database": self.cfg.database} if self.cfg.database else {}
+
     def _bootstrap(
         self,
         *,
@@ -111,8 +156,8 @@ class KnowledgeGraph:
         fatal: bool,
     ) -> None:
         """
-        Try to verify connectivity and create schema.
-        - fatal=True: raise if cannot become ready (useful in local dev).
+        Try to verify connectivity and ensure schema.
+        - fatal=True: raise if cannot become ready.
         - fatal=False: mark not-ready and keep process alive.
         """
         delay = max(0.0, initial_delay_s)
@@ -120,14 +165,23 @@ class KnowledgeGraph:
         for attempt in range(1, attempts + 1):
             try:
                 self.driver.verify_connectivity()
-                self.create_schema()
+
+                # Schema should not take the whole service down; make it best-effort
+                # unless fatal=True (dev/local).
+                try:
+                    self.create_schema()
+                except Exception as schema_e:
+                    logger.exception("Neo4j reachable but schema ensure failed: %s", schema_e)
+                    if fatal:
+                        raise
+
                 self._ready = True
                 self._last_error = None
-                logger.info("✅ Neo4j connected and schema ensured.")
+                logger.info("✅ Neo4j connected (schema ensured best-effort).")
                 return
 
             except (AuthError, ConfigurationError) as e:
-                # These are not transient; fail fast.
+                # Not transient; fail fast.
                 self._ready = False
                 self._last_error = e
                 logger.exception("Neo4j configuration/auth error (not retrying).")
@@ -150,7 +204,7 @@ class KnowledgeGraph:
                         raise
                     return
 
-                # Exponential-ish backoff + jitter
+                # Backoff + jitter
                 sleep_for = min(max_delay_s, max(0.1, delay)) * (1.0 + random.random() * 0.25)
                 logger.warning(
                     "Neo4j not ready (attempt %s/%s): %s; retrying in %.2fs",
@@ -165,9 +219,9 @@ class KnowledgeGraph:
     # -----------------------------
     # Core query runners
     # -----------------------------
-    def _session_kwargs(self) -> Dict[str, Any]:
-        # Neo4j Python driver accepts database kwarg in v4+.
-        return {"database": self._database} if self._database else {}
+    def _mark_not_ready(self, e: BaseException) -> None:
+        self._ready = False
+        self._last_error = e
 
     def _run(self, query: str, parameters: Optional[Dict[str, Any]] = None) -> None:
         """
@@ -181,13 +235,10 @@ class KnowledgeGraph:
                 result = session.run(query, parameters=parameters or {})
                 result.consume()
         except (ServiceUnavailable, OSError, Neo4jError, ValueError) as e:
-            self._ready = False
-            self._last_error = e
+            self._mark_not_ready(e)
             raise
 
-    def _fetch(
-        self, query: str, parameters: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+    def _fetch(self, query: str, parameters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
         Run a read query and return list[dict].
         Marks driver as not-ready on network-ish failures.
@@ -199,8 +250,7 @@ class KnowledgeGraph:
                 result = session.run(query, parameters=parameters or {})
                 return [record.data() for record in result]
         except (ServiceUnavailable, OSError, Neo4jError, ValueError) as e:
-            self._ready = False
-            self._last_error = e
+            self._mark_not_ready(e)
             raise
 
     # -----------------------------
@@ -209,7 +259,7 @@ class KnowledgeGraph:
     def create_schema(self) -> None:
         """
         Idempotent schema creation.
-        Called only after verify_connectivity succeeds.
+        Called after verify_connectivity succeeds (usually).
         """
         queries = [
             "CREATE CONSTRAINT novel_id_unique IF NOT EXISTS FOR (n:Novel) REQUIRE n.id IS UNIQUE",
@@ -355,7 +405,6 @@ class KnowledgeGraph:
         LIMIT $limit
         """
         rows = self._fetch(query, parameters={"name": character_name, "limit": limit})
-        # rows come newest->oldest; reverse to oldest->newest
         return [{"user": r["user"], "ai": r["ai"]} for r in rows][::-1]
 
     # ------------------------------------------------------------------
