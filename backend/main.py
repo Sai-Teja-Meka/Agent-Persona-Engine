@@ -427,6 +427,15 @@ async def health():
         },
     }
 
+@app.get("/")
+async def root():
+    return {
+        "service": "Persona Engine API",
+        "version": "2.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
+
 
 @app.get("/health/neo4j")
 async def health_neo4j():
