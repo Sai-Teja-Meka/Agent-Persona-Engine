@@ -53,44 +53,45 @@ def check_neo4j(kg: KnowledgeGraph) -> Dict:
 def check_chroma(vault: VectorVault) -> Dict:
     """
     Best-effort Chroma check.
-    Prefer explicit vault.health()/vault.ping() if implemented.
     """
-    # 1) VectorVault has explicit health/ping method
-    for method_name in ("health", "ping"):
-        if hasattr(vault, method_name) and callable(getattr(vault, method_name)):
-            try:
-                result = getattr(vault, method_name)()
-                # If it's a health dict, pass it through; otherwise coerce.
-                if isinstance(result, dict):
-                    return result
-                return {"chroma_ready": True, "chroma_last_error": None, "method": method_name}
-            except Exception as e:
-                return {"chroma_ready": False, "chroma_last_error": str(e), "method": method_name}
-
-    # 2) Try common underlying client attribute names
-    for attr in ("client", "_client", "chroma", "_chroma"):
-        if hasattr(vault, attr):
-            client = getattr(vault, attr)
-            try:
-                if hasattr(client, "heartbeat") and callable(getattr(client, "heartbeat")):
-                    client.heartbeat()
-                    return {"chroma_ready": True, "chroma_last_error": None, "method": f"{attr}.heartbeat"}
-                if hasattr(client, "list_collections") and callable(getattr(client, "list_collections")):
-                    client.list_collections()
-                    return {
-                        "chroma_ready": True,
-                        "chroma_last_error": None,
-                        "method": f"{attr}.list_collections",
-                    }
-            except Exception as e:
-                return {"chroma_ready": False, "chroma_last_error": str(e), "method": attr}
-
+    if vault is None:
+        return {"chroma_ready": False, "chroma_last_error": "vault is None"}
+    
+    # First try the explicit health() method on VectorVault
+    if hasattr(vault, 'health'):
+        try:
+            result = vault.health()
+            # VectorVault.health() returns {"ready": bool, "last_error": str, ...}
+            return {
+                "chroma_ready": result.get("ready", False),
+                "chroma_last_error": result.get("last_error"),
+                "method": "vault.health()"
+            }
+        except Exception as e:
+            return {"chroma_ready": False, "chroma_last_error": str(e), "method": "vault.health()"}
+    
+    # Fallback: try ping
+    if hasattr(vault, 'ping'):
+        try:
+            vault.ping()
+            return {"chroma_ready": True, "chroma_last_error": None, "method": "vault.ping()"}
+        except Exception as e:
+            return {"chroma_ready": False, "chroma_last_error": str(e), "method": "vault.ping()"}
+    
+    # Last resort: check is_ready property
+    if hasattr(vault, 'is_ready'):
+        is_ready = vault.is_ready
+        return {
+            "chroma_ready": is_ready,
+            "chroma_last_error": getattr(vault, '_last_error', None) if not is_ready else None,
+            "method": "vault.is_ready"
+        }
+    
     return {
         "chroma_ready": None,
-        "chroma_last_error": "No known health method on VectorVault; implement vault.ping() or expose client.",
+        "chroma_last_error": "No health check method available",
         "method": None,
     }
-
 
 # ============================================================
 # Lifespan
