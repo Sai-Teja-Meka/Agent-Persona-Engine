@@ -32,8 +32,22 @@ active_personas: Dict[str, CharacterSoul] = {}  # persona_id -> CharacterSoul in
 # Service checks
 # ============================================================
 def check_neo4j(kg: KnowledgeGraph) -> Dict:
-    # Do not force a hard verify here; just report readiness + last error.
-    return kg.health()
+    """
+    Check Neo4j readiness with an actual ping if ready flag is true.
+    """
+    if kg is None:
+        return {"neo4j_ready": False, "neo4j_last_error": "KnowledgeGraph is None"}
+    
+    # First check internal ready flag
+    if not kg.is_ready:
+        return {"neo4j_ready": False, "neo4j_last_error": kg.last_error}
+    
+    # If flag says ready, verify with a quick ping
+    try:
+        kg.ping()
+        return {"neo4j_ready": True, "neo4j_last_error": None}
+    except Exception as e:
+        return {"neo4j_ready": False, "neo4j_last_error": str(e)}
 
 
 def check_chroma(vault: VectorVault) -> Dict:
@@ -83,55 +97,77 @@ def check_chroma(vault: VectorVault) -> Dict:
 # ============================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("CHROMA_HOST", settings.CHROMA_HOST)
-    print("CHROMA_PORT", settings.CHROMA_PORT)
+    print("=" * 60)
     print("🚀 Persona Engine API starting...")
+    print("=" * 60)
+    print(f"CHROMA_HOST: {settings.CHROMA_HOST}")
+    print(f"CHROMA_PORT: {settings.CHROMA_PORT}")
+    print(f"NEO4J_URI: {settings.NEO4J_URI}")
+    print(f"NEO4J_USER: {settings.NEO4J_USER}")
+    print("-" * 60)
 
-    # Create services and store on app.state (not globals)
-    # IMPORTANT: never let these raise and kill lifespan unless you want strict mode.
+    # ===== NEO4J INITIALIZATION =====
+    print("🔵 Initializing Neo4j...")
     try:
-        app.state.kg = KnowledgeGraph()  # should start degraded if Neo4j down
+        app.state.kg = KnowledgeGraph()
+        neo4j_status = check_neo4j(app.state.kg)
+        
+        if neo4j_status.get("neo4j_ready"):
+            print("✅ Neo4j CONNECTED and READY")
+            print(f"   └─ URI: {settings.NEO4J_URI}")
+        else:
+            print("⚠️  Neo4j NOT READY (running in degraded mode)")
+            print(f"   └─ Error: {neo4j_status.get('neo4j_last_error', 'Unknown')[:100]}")
     except Exception as e:
-        # Absolute last-resort: keep app alive even if KnowledgeGraph init changed.
-        print(f"⚠️ KnowledgeGraph init failed (continuing without Neo4j): {e}")
+        print(f"❌ Neo4j FAILED TO INITIALIZE")
+        print(f"   └─ Error: {str(e)[:200]}")
         app.state.kg = None
 
+    # ===== CHROMA INITIALIZATION =====
+    print("🟣 Initializing ChromaDB...")
     try:
-        app.state.vault = VectorVault()  # should start degraded if Chroma down (depending on strict)
+        app.state.vault = VectorVault()
+        chroma_status = check_chroma(app.state.vault)
+        
+        if chroma_status.get("chroma_ready") is True:
+            print("✅ ChromaDB CONNECTED and READY")
+            print(f"   └─ Host: {settings.CHROMA_HOST}:{settings.CHROMA_PORT}")
+        elif chroma_status.get("chroma_ready") is False:
+            print("⚠️  ChromaDB NOT READY")
+            print(f"   └─ Error: {chroma_status.get('chroma_last_error', 'Unknown')[:100]}")
+        else:
+            print("⚠️  ChromaDB status UNKNOWN (no health check available)")
     except Exception as e:
-        print(f"⚠️ VectorVault init failed (continuing without Chroma): {e}")
+        print(f"❌ ChromaDB FAILED TO INITIALIZE")
+        print(f"   └─ Error: {str(e)[:200]}")
         app.state.vault = None
 
-    # Report status (do NOT print “connected” unless verified)
-    if app.state.kg is not None:
-        neo4j_status = check_neo4j(app.state.kg)
-        if neo4j_status.get("neo4j_ready"):
-            print("✅ Neo4j ready")
-        else:
-            print(f"⚠️ Neo4j NOT ready (degraded mode): {neo4j_status.get('neo4j_last_error')}")
+    # ===== FINAL STATUS =====
+    print("=" * 60)
+    neo4j_ok = app.state.kg is not None and getattr(app.state.kg, "_ready", False)
+    chroma_ok = app.state.vault is not None and getattr(app.state.vault, "_ready", False)
+    
+    if neo4j_ok and chroma_ok:
+        print("🎉 ALL SYSTEMS OPERATIONAL")
+    elif neo4j_ok or chroma_ok:
+        print("⚠️  PARTIAL OPERATIONAL (some endpoints may return 503)")
     else:
-        print("⚠️ Neo4j disabled (KnowledgeGraph not initialized).")
-
-    if app.state.vault is not None:
-        chroma_status = check_chroma(app.state.vault)
-        if chroma_status.get("chroma_ready") is True:
-            print("✅ ChromaDB ready")
-        else:
-            print(f"⚠️ ChromaDB status uncertain/down: {chroma_status.get('chroma_last_error')}")
-    else:
-        print("⚠️ Chroma disabled (VectorVault not initialized).")
-
-    print("🎯 API running (some endpoints may return 503 until dependencies recover).")
+        print("⚠️  DEGRADED MODE (most endpoints will return 503)")
+    
+    print("🎯 API server is listening on port 8080")
+    print("=" * 60)
 
     yield
 
     # Shutdown
+    print("\n👋 Shutting down...")
     try:
         kg = getattr(app.state, "kg", None)
         if kg is not None:
             kg.close()
-    finally:
-        print("👋 Shutting down...")
+            print("   └─ Neo4j driver closed")
+    except Exception as e:
+        print(f"   └─ Error closing Neo4j: {e}")
 
 
 # ============================================================

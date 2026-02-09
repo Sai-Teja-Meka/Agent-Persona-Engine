@@ -94,6 +94,11 @@ class VectorVault:
         """
         if not self._ready:
             raise RuntimeError(f"Chroma not ready: {self._last_error or 'unknown error'}")
+        
+    @property
+    def is_ready(self) -> bool:
+        """Returns whether vault is ready for operations."""
+        return self._ready   
 
     def add_chapter(self, chapter: Chapter) -> None:
         """
