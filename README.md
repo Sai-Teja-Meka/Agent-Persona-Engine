@@ -310,7 +310,7 @@ Special thanks to:
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/agent-persona-engine/issues)
 - **Email**: saitejameka45usa@gmail.com
-- **Portfolio**: [Your Portfolio Link](https://saiteja-ai.vercel.app/)
+- **Portfolio**: [My Portfolio Link](https://saiteja-ai.vercel.app/)
 - **LinkedIn**: [Connect with me](www.linkedin.com/in/sai-teja-meka-b336211b6)
 
 ---
