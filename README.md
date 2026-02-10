@@ -1,9 +1,4 @@
 <p align="center">
-  <img src="docs/img/persona-engine-logo.png" alt="Agent Persona Engine" width="40%"/>
-  <br><br>
-</p>
-
-<p align="center">
   <strong>Agent Persona Engine</strong> is a production-grade AI system that extracts cognitive architectures from real domain experts, creating synthetic expert personas that outperform vanilla LLMs on specialized queries.
 </p>
 
