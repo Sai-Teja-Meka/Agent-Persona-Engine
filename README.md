@@ -1,3 +1,11 @@
+<div align="center">
+
+# Agent Persona Engine
+
+*Composable persona modeling for multi-agent systems*
+
+</div>
+
 <p align="center">
   <strong>Agent Persona Engine</strong> is a production-grade AI system that extracts cognitive architectures from real domain experts, creating synthetic expert personas that outperform vanilla LLMs on specialized queries.
 </p>
@@ -302,8 +310,8 @@ Special thanks to:
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/agent-persona-engine/issues)
 - **Email**: saitejameka45usa@gmail.com
-- **Portfolio**: [Your 3D Portfolio Link](https://your-portfolio.com)
-- **LinkedIn**: [Connect with me](https://www.linkedin.com/in/sai-teja-meka)
+- **Portfolio**: [Your Portfolio Link](https://saiteja-ai.vercel.app/)
+- **LinkedIn**: [Connect with me](www.linkedin.com/in/sai-teja-meka-b336211b6)
 
 ---
 
