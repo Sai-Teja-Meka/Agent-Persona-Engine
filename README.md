@@ -82,6 +82,8 @@ Working today: end-to-end ingestion → hybrid storage → character chat with r
 
 Honest gaps: no automated eval harness yet (persona-fidelity scoring is the next milestone), single-novel-at-a-time workflow, and drift correction is monitor-and-flag rather than auto-repair.
 
+Cold-start verification with live keys: see docs/VERIFICATION.md.
+
 ## License
 
 MIT
