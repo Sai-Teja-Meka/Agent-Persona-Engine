@@ -3,7 +3,7 @@
 # Agent Persona Engine
 ### *The Infinite Library*
 
-**Chat with characters from a novel — grounded in the actual text, with persistent hybrid memory.**
+**Chat with characters from a novel, grounded in the actual text, with persistent hybrid memory.**
 
 </div>
 
@@ -45,7 +45,7 @@ Interfaces
 
 ## Quick start
 
-Prerequisites: Python 3.11+, Docker, and LLM keys — ingestion uses Groq (`GROQ_API_KEY`), while chat uses DeepSeek (`DEEPSEEK_API_KEY`) or Gemini (`GOOGLE_API_KEY`), so you need `GROQ_API_KEY` plus one of the other two for the full pipeline.
+Prerequisites: Python 3.11+, Docker, and LLM keys, ingestion uses Groq (`GROQ_API_KEY`), while chat uses DeepSeek (`DEEPSEEK_API_KEY`) or Gemini (`GOOGLE_API_KEY`), so you need `GROQ_API_KEY` plus one of the other two for the full pipeline.
 
 ```bash
 git clone https://github.com/Sai-Teja-Meka/Agent-Persona-Engine.git
@@ -71,7 +71,7 @@ streamlit run app.py
 
 ## Design notes
 
-- **Grounded ≠ retrieved-once.** Every turn re-queries both stores. The character's knowledge is bounded by what's actually in the ingested text — the persona can't "know" events the source never gave it.
+- **Grounded ≠ retrieved-once.** Every turn re-queries both stores. The character's knowledge is bounded by what's actually in the ingested text, the persona can't "know" events the source never gave it.
 - **Two memories, two failure modes.** Vector store alone loses relationships ("who betrayed whom"); graph alone loses texture ("what the rain felt like in that scene"). The hybrid recall exists because each covers the other's blind spot.
 - **Resumable ingestion.** Long novels take many LLM calls; the engine checkpoints per chapter and resumes from the last processed state.
 - **Provenance-first.** Chat responses expose the memories and facts they used (`context_used` in the API response), so you can audit *why* the character said what it said.
