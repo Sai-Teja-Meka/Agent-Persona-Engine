@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Brain, Star, TrendingUp, Sparkles } from 'lucide-react';
+import { Brain, TrendingUp, Sparkles } from 'lucide-react';
 import { api } from '../../services/api';
 import { usePersonaStore } from '../../stores/usePersonaStore';
 import { Card } from '../ui/Card';
@@ -38,7 +38,7 @@ export function PersonaGallery() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <Card glass>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
@@ -65,26 +65,6 @@ export function PersonaGallery() {
                     </div>
                 </Card>
 
-                <Card glass>
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                            <TrendingUp className="w-6 h-6 text-yellow-400" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-white">
-                                {personas
-                                    ? (
-                                        personas.reduce((sum, p) => sum + p.credibility_score, 0) /
-                                        personas.length *
-                                        100
-                                    ).toFixed(0)
-                                    : 0}
-                                %
-                            </p>
-                            <p className="text-sm text-dark-400">Avg Credibility</p>
-                        </div>
-                    </div>
-                </Card>
             </div>
 
             {/* Persona Grid */}
@@ -122,13 +102,6 @@ export function PersonaGallery() {
 
                             {/* Metrics */}
                             <div className="flex items-center gap-4 mb-4 pb-4 border-b border-dark-800">
-                                <div className="flex items-center gap-1.5">
-                                    <Star className="w-4 h-4 text-yellow-500" />
-                                    <span className="text-sm font-medium text-white">
-                                        {(persona.credibility_score * 100).toFixed(0)}%
-                                    </span>
-                                </div>
-
                                 <div className="flex items-center gap-1.5">
                                     <TrendingUp className="w-4 h-4 text-green-500" />
                                     <span className="text-sm font-medium text-white">

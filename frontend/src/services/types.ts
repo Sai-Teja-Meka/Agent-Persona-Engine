@@ -3,7 +3,6 @@ export interface PersonaInfo {
     name: string;
     domain: string;
     expertise_areas: string[];
-    credibility_score: number;
     description: string;
 }
 

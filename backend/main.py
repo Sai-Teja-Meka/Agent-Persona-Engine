@@ -218,7 +218,6 @@ class PersonaInfo(BaseModel):
     name: str
     domain: str
     expertise_areas: List[str]
-    credibility_score: float
     description: str
 
 
@@ -276,7 +275,6 @@ async def list_personas():
                 name=char["name"],
                 domain="General",
                 expertise_areas=["Problem Solving", "Analysis"],
-                credibility_score=0.85,
                 description=char["description"],
             )
         )
@@ -302,7 +300,6 @@ async def get_persona(persona_id: str):
         name=result["name"],
         domain="General",
         expertise_areas=["Problem Solving", "Analysis"],
-        credibility_score=0.85,
         description=result["description"] or "No description available",
     )
 
