@@ -13,10 +13,10 @@
 
 Feed it a long-form novel. It builds a queryable world model and lets you converse with any character in it — where every reply is grounded in scenes the character actually lived through, not the LLM's vibes about them.
 
-1. **Ingestion** — an Archivist agent processes the novel chapter by chapter, extracting scenes, characters, relationships, and the world's power hierarchy (e.g. cultivation ranks) into structured form.
-2. **Hybrid memory** — scenes are embedded into **ChromaDB** (semantic recall); characters, relationships, and world facts go into **Neo4j** (relational recall).
-3. **Character Soul** — a persona layer that answers as a specific character. Each turn performs *deep recall*: vector search over lived scenes + graph queries over relationships + rolling conversation summaries, all injected into the prompt.
-4. **Drift monitoring** — a DriftMonitor agent watches for the persona sliding out of character across turns; a MemoryManager compresses conversation history into summaries so long sessions stay coherent.
+1. **Ingestion** - an Archivist agent processes the novel chapter by chapter, extracting scenes, characters, relationships, and the world's power hierarchy (e.g. cultivation ranks) into structured form.
+2. **Hybrid memory** - scenes are embedded into **ChromaDB** (semantic recall); characters, relationships, and world facts go into **Neo4j** (relational recall).
+3. **Character Soul** - a persona layer that answers as a specific character. Each turn performs *deep recall*: vector search over lived scenes + graph queries over relationships + rolling conversation summaries, all injected into the prompt.
+4. **Drift monitoring** - a DriftMonitor agent watches for the persona sliding out of character across turns; a MemoryManager compresses conversation history into summaries so long sessions stay coherent.
 
 ## Architecture
 
