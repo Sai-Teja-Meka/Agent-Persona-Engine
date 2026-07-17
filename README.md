@@ -1,7 +1,6 @@
 <div align="center">
 
-# Agent Persona Engine
-### *The Infinite Library*
+<img src="docs/img/ape-banner.svg" alt="Agent Persona Engine — The Infinite Library" width="100%" />
 
 **Chat with characters from a novel — grounded in the actual text, with persistent hybrid memory.**
 
@@ -17,6 +16,8 @@ Feed it a long-form novel. It builds a queryable world model and lets you conver
 2. **Hybrid memory** — scenes are embedded into **ChromaDB** (semantic recall); characters, relationships, and world facts go into **Neo4j** (relational recall).
 3. **Character Soul** — a persona layer that answers as a specific character. Each turn performs *deep recall*: vector search over lived scenes + graph queries over relationships + rolling conversation summaries, all injected into the prompt.
 4. **Drift monitoring** — a DriftMonitor agent watches for the persona sliding out of character across turns; a MemoryManager compresses conversation history into summaries so long sessions stay coherent.
+
+<img src="docs/demo/chat-flow.png" alt="Chat flow: persona gallery, question to Alice, grounded response with recall provenance" width="100%" />
 
 ## Architecture
 
@@ -42,6 +43,10 @@ Interfaces
 ```
 
 **Stack:** Python · FastAPI · Neo4j · ChromaDB · LangChain · DeepSeek / Gemini / Groq · React 19 + TypeScript + Vite · WebSockets · Streamlit · Docker Compose
+
+Watching the library build itself:
+
+<img src="docs/demo/ingest.svg" alt="Animated terminal recording of novel ingestion" width="100%" />
 
 ## Quick start
 
