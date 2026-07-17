@@ -24,13 +24,13 @@ Question to the Alice persona (answerable only from chapter 3):
 
 > *"Why did all the birds and creatures suddenly leave you alone by the pool? What did you say wrong?"*
 
-The persona correctly answered that mentioning her cat Dinah frightened the party away and that the Mouse took offence — both facts present in the ingested text. The API's `context_used` field showed the correct retrieved scene, so the answer is auditable, not coincidental.
+The persona correctly answered that mentioning her cat Dinah frightened the party away and that the Mouse took offence, both facts present in the ingested text. The API's `context_used` field showed the correct retrieved scene, so the answer is auditable, not coincidental.
 
 ## Observed limitation (kept deliberately)
 
 The response also included one embellishment not present in the source: the Dodo "muttering about creatures of different feathers." Retrieval correctly bounds what the persona *knows*; generation still decorates around the retrieved facts. This is the precise gap the roadmap's persona-fidelity eval harness is intended to measure.
 
-Additionally, in this exchange the graph store contributed no facts (`facts: []`) — scene memories carried the full recall. With a 3-chapter corpus this is expected: relational recall earns its keep on relationship-dense questions against fully-ingested novels, not short excerpts.
+Additionally, in this exchange the graph store contributed no facts (`facts: []`), scene memories carried the full recall. With a 3-chapter corpus this is expected: relational recall earns its keep on relationship-dense questions against fully-ingested novels, not short excerpts.
 
 ## Reproducing
 
