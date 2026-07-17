@@ -1,0 +1,108 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agent Persona Engine — The Infinite Library">
+  <defs>
+    <!-- Deep-night background -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0e1a"/>
+      <stop offset="100%" stop-color="#101528"/>
+    </linearGradient>
+
+    <!-- Liquid layers: indigo -> teal -> gold (breathing hues) -->
+    <linearGradient id="w1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4f46e5">
+        <animate attributeName="stop-color" values="#4f46e5;#0ea5a4;#4f46e5" dur="14s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#0ea5a4">
+        <animate attributeName="stop-color" values="#0ea5a4;#6d28d9;#0ea5a4" dur="14s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="w2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0891b2">
+        <animate attributeName="stop-color" values="#0891b2;#7c3aed;#0891b2" dur="18s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#7c3aed">
+        <animate attributeName="stop-color" values="#7c3aed;#0891b2;#7c3aed" dur="18s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="w3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0%" stop-color="#e2e8f0" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bg)"/>
+  <rect width="1200" height="320" fill="url(#glow)"/>
+
+  <!-- Each wave path is drawn 2400 wide (two identical periods) and
+       translated left by exactly one period, so the loop is seamless. -->
+
+  <!-- Back layer: slow, deep -->
+  <g opacity="0.35" filter="url(#soft)">
+    <path fill="url(#w2)" d="M0,236 C100,214 200,258 300,236 C400,214 500,258 600,236 C700,214 800,258 900,236 C1000,214 1100,258 1200,236 C1300,214 1400,258 1500,236 C1600,214 1700,258 1800,236 C1900,214 2000,258 2100,236 C2200,214 2300,258 2400,236 L2400,320 L0,320 Z">
+      <animateTransform attributeName="transform" type="translate" from="0,0" to="-1200,0" dur="26s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Mid layer: counter-drift (moves right for parallax) -->
+  <g opacity="0.45">
+    <path fill="url(#w1)" d="M0,254 C120,232 240,276 360,254 C480,232 600,276 720,254 C840,232 960,276 1080,254 C1200,232 1320,276 1440,254 C1560,232 1680,276 1800,254 C1920,232 2040,276 2160,254 C2280,232 2400,276 2520,254 L2520,320 L0,320 Z">
+      <animateTransform attributeName="transform" type="translate" from="-1200,0" to="0,0" dur="17s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Front layer: fast, thin golden filament -->
+  <g opacity="0.5">
+    <path fill="none" stroke="url(#w3)" stroke-width="2.5" d="M0,272 C100,258 200,286 300,272 C400,258 500,286 600,272 C700,258 800,286 900,272 C1000,258 1100,286 1200,272 C1300,258 1400,286 1500,272 C1600,258 1700,286 1800,272 C1900,258 2000,286 2100,272 C2200,258 2300,286 2400,272">
+      <animateTransform attributeName="transform" type="translate" from="0,0" to="-1200,0" dur="11s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Front fill wave -->
+  <g opacity="0.85">
+    <path fill="#0d1226" d="M0,284 C150,270 300,298 450,284 C600,270 750,298 900,284 C1050,270 1200,298 1350,284 C1500,270 1650,298 1800,284 C1950,270 2100,298 2250,284 C2325,277 2400,291 2400,284 L2400,320 L0,320 Z">
+      <animateTransform attributeName="transform" type="translate" from="0,0" to="-1200,0" dur="13s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Drifting motes (library dust / qi) -->
+  <g fill="#e2e8f0">
+    <circle cx="180" cy="120" r="1.6" opacity="0.5">
+      <animate attributeName="cy" values="120;96;120" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.1;0.5" dur="9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="420" cy="80" r="1.2" opacity="0.4">
+      <animate attributeName="cy" values="80;104;80" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.08;0.4" dur="12s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="760" cy="140" r="1.8" opacity="0.45">
+      <animate attributeName="cy" values="140;112;140" dur="10s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.1;0.45" dur="10s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="980" cy="90" r="1.3" opacity="0.5">
+      <animate attributeName="cy" values="90;118;90" dur="14s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.12;0.5" dur="14s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1100" cy="150" r="1.5" opacity="0.35">
+      <animate attributeName="cy" values="150;126;150" dur="11s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.08;0.35" dur="11s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Title -->
+  <g text-anchor="middle" font-family="Georgia, 'Times New Roman', serif">
+    <text x="600" y="128" font-size="52" letter-spacing="6" fill="#e2e8f0" opacity="0.96">THE INFINITE LIBRARY</text>
+    <text x="600" y="170" font-size="19" letter-spacing="10" fill="#94a3b8">A G E N T &#160; P E R S O N A &#160; E N G I N E</text>
+    <text x="600" y="206" font-size="14" letter-spacing="2" fill="#64748b" font-family="Helvetica, Arial, sans-serif" opacity="0.9">
+      chat with characters grounded in the text they lived
+      <animate attributeName="opacity" values="0.9;0.55;0.9" dur="6s" repeatCount="indefinite"/>
+    </text>
+  </g>
+</svg>
